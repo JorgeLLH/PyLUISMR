@@ -6,8 +6,39 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter import Menu
 #Regular expressions
-import re
+import re as rexs
+#19Oct
+from PIL import Image, ImageTk
+import os
+from tkinter import filedialog
+from sympy import *
 
+##--------------------------------------------------------
+
+# Open equations
+def fileOpen():
+    text_Box.delete("1.0", "end")
+    tf = filedialog.askopenfilename(
+        initialdir=os.getcwd(), 
+        title="Open model file", 
+        filetypes=(("Text Files", "*.txt"),)
+        )
+    tf = open(tf)  # or tf = open(tf, 'r')
+    data = tf.read()
+    text_Box.insert(tk.END, data)
+    tf.close()
+
+#Save equations
+def saveIntegration():
+    # Open the save file dialog
+    filename = filedialog.asksaveasfilename(defaultextension=".txt")
+    
+    if filename is not None:  # asksaveasfilename returns `None` if dialog closed with "cancel".
+        # Get text from the text widget
+        all_text = text_Box.get("1.0", tk.END+"-1c")  # gets all text from the textbox
+        with open(filename, 'w') as file:
+            file.write(all_text)
+    
 #click results listboxes------------------
 def clickEvent(event):
     cs = results_list_Box.get(results_list_Box.curselection())
@@ -35,37 +66,43 @@ def plotFFT_results_function(sol, clicked_position):
     point_Values=np.arange(int(points_Count/2))
     time_Period=points_Count/frequency_intervals
     resultant_Frequencies=point_Values/time_Period
-    #eval(t_start), eval(t_stop)+eval(t_step)
-    #
-    plt.style.use('seaborn-poster')
+
     if (clicked_position - 1) > -1:
         plt.figure(figsize = (12, 4))
         plt.plot(resultant_Frequencies, 2*abs(transform_Fourier))
-        plt.show()
+        #19Oct
+        plt.savefig('FFT_pyLUISMR.png')
+        # setup new window
+        new_window = tk.Toplevel(root)
+        new_window.iconbitmap('pyLUISMR.ico')
+        # get image
+        image = ImageTk.PhotoImage(Image.open('FFT_pyLUISMR.png'))
+        # load image
+        panel = tk.Label(new_window, image=image)
+        panel.image = image
+        panel.pack()
+        #plt.show()
     else:
         messagebox.showinfo('information', 'Click on a variable to plot its values')
 #plotting FFT end
     
 #plotting function------------------------
 def plot_results_function(sol, clicked_position):
-    #old
-    #plt.figure(figsize = (12, 4))
-    #plt.subplot(121)
-    #plt.plot(sol.t, sol.y[0])
-    #plt.xlabel('t')
-    #plt.ylabel('S(t)')
-    #plt.subplot(122)
-    #plt.plot(sol.t, sol.y[0] - np.sin(sol.t))
-    #plt.xlabel('t')
-    #plt.ylabel('S(t) - sin(t)')
-    #plt.tight_layout()
-    #plt.show()
-    #old end
-    plt.style.use('seaborn-poster')
     if (clicked_position - 1) > -1:
         plt.figure(figsize = (12, 4))
         plt.plot(sol.t, sol.y[(clicked_position - 1)])
-        plt.show()
+        #19Oct
+        plt.savefig('FIG_pyLUISMR.png')
+        # setup new window
+        new_window = tk.Toplevel(root)
+        new_window.iconbitmap('pyLUISMR.ico')
+        # get image
+        image = ImageTk.PhotoImage(Image.open('FIG_pyLUISMR.png'))
+        # load image
+        panel = tk.Label(new_window, image=image)
+        panel.image = image
+        panel.pack()
+        #plt.show()
     else:
         messagebox.showinfo('information', 'Click on a variable to plot its values')
 #plotting function end----------------------
@@ -76,7 +113,6 @@ def simulate_function():
     t_stop=stop_Box.get(1.0, tk.END+"-1c")
     t_step=step_Box.get(1.0, tk.END+"-1c")
     ##
-    #F = lambda t, s: np.cos(t)
     F=text_Box.get(1.0, tk.END+"-1c")
 
     #Clean list variables-------------------
@@ -84,35 +120,35 @@ def simulate_function():
     results_list_Box2.delete(1,tk.END)
     results_list_Box3.delete(1,tk.END)
     #Search&remove variable names-----------
-    var_names = re.search(r"Vars<<.+>>Vars", F)
+    var_names = rexs.search(r'Vars<<.+>>Vars', F)
     if var_names != None:
-        aux_var_names=re.sub('Vars<<', '', var_names.group())
-        aux_var_names=re.sub('>>Vars', '', aux_var_names)
+        aux_var_names=rexs.sub('Vars<<', '', var_names.group())
+        aux_var_names=rexs.sub('>>Vars', '', aux_var_names)
         ##split using commas
         aux_var_names=aux_var_names.split(',')
         for i_var_names in range(len(aux_var_names)):
             results_list_Box.insert((i_var_names+1),aux_var_names[i_var_names])
-    F=re.sub('\nVars<<.+>>Vars', '', F)
+    F=rexs.sub('\nVars<<.+>>Vars', '', F)
     #Search&remove variable names end-------
 
     ##Search&remove variable initializations--------------
-    x_init = re.search(r"Init<<.+>>Init", F)
+    x_init = rexs.search(r"Init<<.+>>Init", F)
     if x_init != None:
-        auxx_init=re.sub('Init<<', '', x_init.group())
-        auxx_init=re.sub('>>Init', '', auxx_init)
+        auxx_init=rexs.sub('Init<<', '', x_init.group())
+        auxx_init=rexs.sub('>>Init', '', auxx_init)
         x_init=auxx_init
         if len(x_init.split(',')) == 1:
             x_init='['+x_init+']'
             
 
-    F=re.sub('\nInit<<.+>>Init', '', F)
+    F=rexs.sub('\nInit<<.+>>Init', '', F)
     ##Search&remove variable  initializations end--------------
 
     ##add lambda t to the first line to simplify
     F='lambda t, '+F
     
     #clean input
-    F=re.sub('\n', ', ', F)
+    F=rexs.sub('\n', ', ', F)
 
     if len(F) == 0 :
         messagebox.showerror("Error", "No system of equations.")
@@ -132,83 +168,134 @@ def simulate_function():
             results_list_Box3.insert((i_var_results+1),sol.y[i_var_results][-1])
         ##populate list end
 
+
+########################################## TAB 2 functions
+def handle_event(event):
+    if event.state == 12 and event.keysym == 'Return':
+        input_text = entry_box_tab2.get()
+        text_box_tab2.configure(state='normal')  # allow editing
+        text_box_tab2.insert('end', f'INPUT: {input_text}\n')
+        x, y, z = symbols('x y z')
+        sym_solution=eval(input_text)#diff(exp(x**2), x)#limit(sin(x)/x, x, 0)
+        text_box_tab2.insert('end', f'OUTPUT: '+str(sym_solution)+'\n')
+        text_box_tab2.configure(state='disabled')  # prevent further editing
+        entry_box_tab2.delete(0, 'end')  # clear the entry box
+###########################################################
 #tk root configuration----------------------
 root = tk.Tk()
-root.grid_columnconfigure(0, weight=1)#to expand
-root.grid_rowconfigure(0, weight=1)#to expand
+# configuring the grid to expand 
+root.grid_columnconfigure(0, weight=1)
+root.grid_rowconfigure(0, weight=1)
+
+#Create frame for tabs
 frm = ttk.Frame(root, padding=10)
-frm.grid()
+frm.pack(fill='both', expand=True)
+
+# Create the notebook
+notebook = ttk.Notebook(frm)
+
+# Create the tabs
+tab1 = ttk.Frame(notebook)
+tab1.grid(sticky="nsew")
+tab1.grid_columnconfigure((0,1,2,3,4,5), weight=1)
+tab1.grid_rowconfigure((2), weight=1)
+####
+tab2 = ttk.Frame(notebook)
+# Add the tabs to the notebook
+notebook.add(tab1, text='Integration')
+notebook.add(tab2, text='Symbolics')
+
+notebook.pack(fill='both', expand=True)
 #tk root configuration end------------------
 
-# create a menubar
-menubar = Menu(root)
-root.config(menu=menubar)
-
-# create a menu
-file_menu = Menu(menubar)
-
-# add a menu item to the menu
-file_menu.add_command(
-    label='Exit',
-    command=root.destroy
-)
-
-
-# add the File menu to the menubar
-menubar.add_cascade(
-    label="File",
-    menu=file_menu
-)
 #
 #Simulation setup
-ttk.Label(frm, text="Define-> 1)Start 2)Stop 3)Step").grid(column=0, row=0)
-start_Box = tk.Text(frm, height=1, width=5)
+ttk.Label(tab1, text="Define-> 1)Start 2)Stop 3)Step").grid(column=0, row=0)
+start_Box = tk.Text(tab1, height=1, width=5)
 start_Box.grid(column=1, row=0)
-stop_Box = tk.Text(frm, height=1, width=5)
+start_Box.insert(tk.INSERT, '0')
+stop_Box = tk.Text(tab1, height=1, width=5)
 stop_Box.grid(column=2, row=0)
-step_Box = tk.Text(frm, height=1, width=5)
+stop_Box.insert(tk.INSERT, '10')
+step_Box = tk.Text(tab1, height=1, width=5)
 step_Box.grid(column=3, row=0)
-ttk.Button(frm, text="Simulate!", command=simulate_function).grid(column=4, row=0)
+step_Box.insert(tk.INSERT, '0.001')
+ttk.Button(tab1, text="Simulate!", command=simulate_function).grid(column=4, row=0)
 #Simulation setup end
 
 #User equations
-ttk.Label(frm, text="System of equations to simulate:").grid(column=0, row=1)
-text_Box = tk.Text(frm, height=10, width=30)
-text_Box.grid(columnspan=4, row=2)
+ttk.Label(tab1, text="System of equations to simulate:").grid(column=0, row=1)
+text_Box = tk.Text(tab1)
+text_Box.grid(columnspan=4, row=2, sticky="nsew")
+
 #listbox for results-----------------------
-ttk.Label(frm, text="Simulation results:").grid(column=4, row=1)
+ttk.Label(tab1, text="Simulation results:").grid(column=4, row=1)
 results_list_var = tk.StringVar()
-results_list_Box = tk.Listbox(frm, height=10, width=30, listvariable=results_list_var, exportselection=False)
-results_list_Box.grid(column=4, row=2)
+results_list_Box = tk.Listbox(tab1, listvariable=results_list_var, exportselection=False)
+results_list_Box.grid(column=4, row=2, sticky="nsew")
 results_list_Box.insert(0, 'Variable name')
 results_list_Box.bind('<<ListboxSelect>>', clickEvent)
 ##checkbox to show FFT
 checkBox_FFT_var = tk.IntVar()
-checkBox_FFT = tk.Checkbutton(frm, text='Show FFT analysis',variable=checkBox_FFT_var, onvalue=1, offvalue=0)
+checkBox_FFT = tk.Checkbutton(tab1, text='Show FFT analysis',variable=checkBox_FFT_var, onvalue=1, offvalue=0)
 checkBox_FFT.grid(column=5, row=1)
 ##
 #
 
 results_list_var2 = tk.StringVar()
-results_list_Box2 = tk.Listbox(frm, height=10, width=30, listvariable=results_list_var2, exportselection=False)
-results_list_Box2.grid(column=5, row=2)
+results_list_Box2 = tk.Listbox(tab1, listvariable=results_list_var2, exportselection=False)
+results_list_Box2.grid(column=5, row=2, sticky="nsew")
 results_list_Box2.insert(0, 'Initial value')
 #
 
 results_list_var3 = tk.StringVar()
-results_list_Box3 = tk.Listbox(frm, height=10, width=30, listvariable=results_list_var3, exportselection=False)
-results_list_Box3.grid(column=6, row=2)
+results_list_Box3 = tk.Listbox(tab1, listvariable=results_list_var3, exportselection=False)
+results_list_Box3.grid(column=6, row=2, sticky="nsew")
 results_list_Box3.insert(0, 'Ending value')
 #listbox for results end-----------------------
 
+#Create frame for buttons Open/Save
+frmOpenSave = ttk.Frame(tab1, padding=10)
+frmOpenSave.grid(column=0,row=3)
+ttk.Button(frmOpenSave, text="Open", command=fileOpen).grid(column=0, row=0)
+ttk.Button(frmOpenSave, text="Save as", command=saveIntegration).grid(column=1, row=0)
 #User equations end
 
+#####################################################################################
+################### TAB 2
+####################################################################################
+
+entry_box_tab2 = tk.Entry(tab2, font=('CambriaMath', 11))
+entry_box_tab2.pack(fill='both', expand=False)
+
+text_box_tab2 = tk.Text(tab2, font=('CambriaMath', 11))
+text_box_tab2.pack(fill='both', expand=True)
+
+##text_box_tab2.configure(state='disabled')  # initially prevent editing
+
+#####################################################################################
+################### TAB 2 END
+####################################################################################
 #Quit
-ttk.Button(frm, text="Quit", command=root.destroy).grid(column=4, row=3)
+ttk.Button(root, text="Quit", command=root.destroy).pack()
 
 #Window customization
 root.title('PyLIUSMR')
 root.iconbitmap('pyLUISMR.ico')
-#Window customization end
 
+#Window customization end
+root.bind('<Control-Return>', handle_event) #Tab 2 
 root.mainloop()
+
+
+
+
+
+
+
+
+
+
+
+
+
