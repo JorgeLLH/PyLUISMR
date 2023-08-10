@@ -11,6 +11,7 @@ import re as rexs
 from PIL import Image, ImageTk
 import os
 from tkinter import filedialog
+#import sv_ttk #Themes from https://github.com/rdbende/Sun-Valley-ttk-theme
 from sympy import *
 
 ##--------------------------------------------------------
@@ -66,7 +67,9 @@ def plotFFT_results_function(sol, clicked_position):
     point_Values=np.arange(int(points_Count/2))
     time_Period=points_Count/frequency_intervals
     resultant_Frequencies=point_Values/time_Period
-
+    #eval(t_start), eval(t_stop)+eval(t_step)
+    #
+    #plt.style.use('seaborn-poster')
     if (clicked_position - 1) > -1:
         plt.figure(figsize = (12, 4))
         plt.plot(resultant_Frequencies, 2*abs(transform_Fourier))
@@ -88,6 +91,20 @@ def plotFFT_results_function(sol, clicked_position):
     
 #plotting function------------------------
 def plot_results_function(sol, clicked_position):
+    #old
+    #plt.figure(figsize = (12, 4))
+    #plt.subplot(121)
+    #plt.plot(sol.t, sol.y[0])
+    #plt.xlabel('t')
+    #plt.ylabel('S(t)')
+    #plt.subplot(122)
+    #plt.plot(sol.t, sol.y[0] - np.sin(sol.t))
+    #plt.xlabel('t')
+    #plt.ylabel('S(t) - sin(t)')
+    #plt.tight_layout()
+    #plt.show()
+    #old end
+    #plt.style.use('seaborn-poster')
     if (clicked_position - 1) > -1:
         plt.figure(figsize = (12, 4))
         plt.plot(sol.t, sol.y[(clicked_position - 1)])
@@ -113,6 +130,7 @@ def simulate_function():
     t_stop=stop_Box.get(1.0, tk.END+"-1c")
     t_step=step_Box.get(1.0, tk.END+"-1c")
     ##
+    #F = lambda t, s: np.cos(t)
     F=text_Box.get(1.0, tk.END+"-1c")
 
     #Clean list variables-------------------
@@ -190,7 +208,8 @@ root.grid_rowconfigure(0, weight=1)
 #Create frame for tabs
 frm = ttk.Frame(root, padding=10)
 frm.pack(fill='both', expand=True)
-
+##frm.grid_columnconfigure((0,1,2,3,4,5), weight=1)
+##frm.grid_rowconfigure((2), weight=1)
 # Create the notebook
 notebook = ttk.Notebook(frm)
 
@@ -208,6 +227,31 @@ notebook.add(tab2, text='Symbolics')
 notebook.pack(fill='both', expand=True)
 #tk root configuration end------------------
 
+### create a menubar
+##menubar = Menu(root)
+##root.config(menu=menubar)
+##
+### create a menu
+##file_menu = Menu(menubar, tearoff=0)
+##
+### add a menu items to the menu
+##file_menu.add_command(label="New", command=root.destroy)
+##file_menu.add_command(label="Open", command=fileOpen)
+##file_menu.add_command(label="Save", command=root.destroy)
+##file_menu.add_separator()
+##
+### add a menu item to the menu
+##file_menu.add_command(
+##    label='Exit',
+##    command=root.destroy
+##)
+##
+##
+### add the File menu to the menubar
+##menubar.add_cascade(
+##    label="File",
+##    menu=file_menu
+##)
 #
 #Simulation setup
 ttk.Label(tab1, text="Define-> 1)Start 2)Stop 3)Step").grid(column=0, row=0)
@@ -227,7 +271,7 @@ ttk.Button(tab1, text="Simulate!", command=simulate_function).grid(column=4, row
 ttk.Label(tab1, text="System of equations to simulate:").grid(column=0, row=1)
 text_Box = tk.Text(tab1)
 text_Box.grid(columnspan=4, row=2, sticky="nsew")
-
+#text_Box.configure(state='enabled')
 #listbox for results-----------------------
 ttk.Label(tab1, text="Simulation results:").grid(column=4, row=1)
 results_list_var = tk.StringVar()
@@ -282,7 +326,7 @@ ttk.Button(root, text="Quit", command=root.destroy).pack()
 #Window customization
 root.title('PyLIUSMR')
 root.iconbitmap('pyLUISMR.ico')
-
+#sv_ttk.set_theme("light")
 #Window customization end
 root.bind('<Control-Return>', handle_event) #Tab 2 
 root.mainloop()
