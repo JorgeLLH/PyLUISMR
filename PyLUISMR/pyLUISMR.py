@@ -189,15 +189,18 @@ def simulate_function():
 
 ########################################## TAB 2 functions
 def handle_event(event):
-    if event.state == 12 and event.keysym == 'Return':
+    if event.keysym == 'Return':#event.state == 12 and event.keysym == 'Return':
         input_text = entry_box_tab2.get()
-        text_box_tab2.configure(state='normal')  # allow editing
-        text_box_tab2.insert('end', f'INPUT: {input_text}\n')
-        x, y, z = symbols('x y z')
-        sym_solution=eval(input_text)#diff(exp(x**2), x)#limit(sin(x)/x, x, 0)
-        text_box_tab2.insert('end', f'OUTPUT: '+str(sym_solution)+'\n')
-        text_box_tab2.configure(state='disabled')  # prevent further editing
-        entry_box_tab2.delete(0, 'end')  # clear the entry box
+        if input_text == '':
+            messagebox.showwarning('Warning','Empty input.')
+        else:
+            text_box_tab2.configure(state='normal')  # allow editing
+            text_box_tab2.insert('end', f'INPUT: {input_text}\n')
+            x, y, z = symbols('x y z')
+            sym_solution=eval(input_text)#diff(exp(x**2), x)#limit(sin(x)/x, x, 0)
+            text_box_tab2.insert('end', f'OUTPUT: '+str(sym_solution)+'\n')
+            text_box_tab2.configure(state='disabled')  # prevent further editing
+            entry_box_tab2.delete(0, 'end')  # clear the entry box
 ###########################################################
 #tk root configuration----------------------
 root = tk.Tk()
@@ -328,7 +331,7 @@ root.title('PyLIUSMR')
 root.iconbitmap('pyLUISMR.ico')
 #sv_ttk.set_theme("light")
 #Window customization end
-root.bind('<Control-Return>', handle_event) #Tab 2 
+root.bind('<Return>', handle_event) #Tab 2 
 root.mainloop()
 
 
