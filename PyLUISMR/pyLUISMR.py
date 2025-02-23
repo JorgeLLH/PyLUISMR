@@ -198,7 +198,7 @@ def handle_event(event):
             text_box_tab2.insert('end', f'INPUT: {input_text}\n')
             x, y, z, Ω = symbols('x y z \u03A9')
             sym_solution=eval(input_text)#diff(exp(x**2), x)#limit(sin(x)/x, x, 0)
-            text_box_tab2.insert('end', f'OUTPUT: '+str(sym_solution)+'\n')
+            text_box_tab2.insert('end', f'OUTPUT: '+str(sym_solution)+'\n\n')
             text_box_tab2.configure(state='disabled')  # prevent further editing
             entry_box_tab2.delete(0, 'end')  # clear the entry box
 ###########################################################
